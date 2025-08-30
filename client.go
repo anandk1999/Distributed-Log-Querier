@@ -1,0 +1,104 @@
+package main
+
+import (
+	"bufio"
+	"context"
+	"fmt"
+	"net"
+	"os"
+	"os/signal"
+	"strings"
+	"sync"
+	"syscall"
+)
+
+type result struct {
+	addr string
+	resp string
+	err  error
+}
+
+func fanIn(channels ...<-chan result) <-chan result {
+	out := make(chan result)
+	var wg sync.WaitGroup
+
+	wg.Add(len(channels))
+	for _, ch := range channels {
+		go func(c <-chan result) {
+			defer wg.Done()
+			for r := range c {
+				out <- r
+			}
+		}(ch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+
+	return out
+}
+
+func connection(a string, message string, ctx context.Context) <-chan result {
+	results := make(chan result)
+
+	go func() {
+		defer close(results)
+
+		var d net.Dialer
+		conn, err := d.DialContext(ctx, "tcp", a)
+		if err != nil {
+			results <- result{addr: a, err: err}
+			return
+		}
+		defer conn.Close()
+
+		_, err = conn.Write([]byte(message))
+		if err != nil {
+			results <- result{addr: a, err: err}
+			return
+		}
+
+		scanner := bufio.NewScanner(conn)
+		for scanner.Scan() {
+			// Send each line as a separate result
+			select {
+			case <-ctx.Done(): // Check if the operation was cancelled.
+				return
+			case results <- result{addr: a, resp: scanner.Text()}:
+			}
+		}
+		// Check for scanner errors
+		if err := scanner.Err(); err != nil {
+			results <- result{addr: a, err: err}
+		}
+	}()
+
+	return results
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Give me your grep command: ")
+	message, _ := reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+
+	addresses := []string{"localhost:8080", "localhost:8081"}
+
+	// Create a context that can be cancelled by Ctrl+C.
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	c := fanIn(connection(addresses[0], message, ctx), connection(addresses[1], message, ctx))
+
+	for r := range c {
+		if r.err != nil {
+			// fmt.Printf("[%s] error: %v\n", r.addr, r.err)
+			continue
+		}
+		fmt.Printf("[%s] response:\n%s\n", r.addr, r.resp)
+	}
+
+	os.Exit(0)
+}
