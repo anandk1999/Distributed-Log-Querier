@@ -3,6 +3,7 @@ git clone git@gitlab.engr.illinois.edu:saik2/mp1-g02.git
 cd mp1-g02
 go mod init mp1-g02
 go mod tidy
+chmod +x ./mp1-g02/scripts/*.sh
 
 # Step 2: Install air for automatic reloading
 go install github.com/air-verse/air@latest
