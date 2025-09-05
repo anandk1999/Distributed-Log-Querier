@@ -64,7 +64,7 @@ func handleConnection(conn net.Conn, machine string) {
 }
 
 func getMachineNumber() string {
-	filename := " mapping.txt"
+	filename := "mapping.txt"
 	filePath := filepath.Join("..", filename)
 	file, err := os.Open(filePath)
 	if err != nil {
