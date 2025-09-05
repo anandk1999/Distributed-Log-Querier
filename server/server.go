@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -13,15 +15,12 @@ func parseCommand(input string) (string, []string) {
 	if len(parts) == 0 {
 		return "", nil
 	}
-	for i, f := range parts {
-		parts[i] = strings.Trim(f, `"`)
-	}
 	return parts[0], parts[1:]
 }
 
-func executeGrep(query string) string {
+func executeGrep(query string, machine string) string {
 	name, args := parseCommand(query)
-	args = append(args, string("./machine.1.log"))
+	args = append(args, fmt.Sprintf("./machine.%s.log", machine))
 	cmd := exec.Command(name, args...)
 	fmt.Println("Outputs from grep command: ")
 
@@ -41,7 +40,7 @@ func executeGrep(query string) string {
 	return string(output)
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, machine string) {
 	defer conn.Close() // Ensure connection is closed
 
 	// Read data from the client
@@ -56,11 +55,52 @@ func handleConnection(conn net.Conn) {
 	fmt.Printf("Received from client: %s\n", query)
 
 	// Send a response back to the client
-	_, err = conn.Write([]byte(executeGrep(query)))
+	_, err = conn.Write([]byte(executeGrep(query, machine)))
 	if err != nil {
 		fmt.Println("Error writing:", err)
 		return
 	}
+}
+
+func getMachineNumber() string {
+	file, err := os.Open("../mapping.txt")
+	if err != nil {
+		log.Fatalf("failed to open mapping file: %v", err)
+	}
+	defer file.Close()
+
+	mapping := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, ":")
+		if len(parts) != 2 {
+			continue // skip invalid lines
+		}
+		host := strings.TrimSpace(parts[0])
+		num := strings.TrimSpace(parts[1])
+		mapping[host] = num
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("failed to scan mapping file: %v", err)
+	}
+
+	out, err := exec.Command("hostname").Output()
+	if err != nil {
+		log.Fatalf("failed to run hostname: %v", err)
+	}
+	hostname := strings.TrimSpace(string(out))
+
+	num, ok := mapping[hostname]
+	if !ok {
+		log.Fatalf("hostname %s not found in mapping file", hostname)
+	}
+
+	return num
 }
 
 func main() {
@@ -73,12 +113,14 @@ func main() {
 
 	fmt.Println("Server listening on :8080")
 
+	machine := getMachineNumber()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Error accepting:", err)
 			continue
 		}
-		go handleConnection(conn) // Handle connection in a goroutine
+		go handleConnection(conn, machine) // Handle connection in a goroutine
 	}
 }
