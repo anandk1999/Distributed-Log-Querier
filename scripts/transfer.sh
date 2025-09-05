@@ -12,8 +12,9 @@ fi
 # Confirm file with user
 read -p "Continue? (Y/N): " confirm && [[ $confirm =~ ^[Yy](es)?$ ]] || exit 1
 
+HOSTS_FILE="../hosts.txt"
 # Loop through hosts
-for HOST in $(cat hosts.txt); do
+for HOST in $(cat $HOSTS_FILE); do
   echo ">>> Transferring $file to $HOST"
   scp "$file" saik2@"$HOST":/home/saik2/
 
