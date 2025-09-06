@@ -85,7 +85,7 @@ func main() {
 	message = strings.TrimSpace(message)
 
 	// Read hosts.txt and build address list
-	file, err := os.Open("hosts.txt")
+	file, err := os.Open("../hosts.txt")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open hosts.txt: %v\n", err)
 		os.Exit(1)
