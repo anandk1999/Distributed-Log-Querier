@@ -54,6 +54,8 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 		}
 		defer conn.Close()
 
+		fmt.Print(fmt.Sprintf("Connected to %s", a))
+
 		_, err = conn.Write([]byte(message))
 		if err != nil {
 			results <- result{addr: a, err: err}
@@ -110,11 +112,15 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	c := fanIn(connection(addresses[0], message, ctx), connection(addresses[1], message, ctx))
+	var chans []<-chan result
+	for _, addr := range addresses {
+		chans = append(chans, connection(addr, message, ctx))
+	}
+	c := fanIn(chans...)
 
 	for r := range c {
 		if r.err != nil {
-			// fmt.Printf("[%s] error: %v\n", r.addr, r.err)
+			fmt.Printf("[%s] error: %v\n", r.addr, r.err)
 			continue
 		}
 		fmt.Printf("[%s] response:\n%s\n", r.addr, r.resp)
