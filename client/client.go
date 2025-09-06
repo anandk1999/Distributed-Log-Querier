@@ -84,7 +84,27 @@ func main() {
 	message, _ := reader.ReadString('\n')
 	message = strings.TrimSpace(message)
 
-	addresses := []string{"localhost:8080", "localhost:8081"}
+	// Read hosts.txt and build address list
+	file, err := os.Open("hosts.txt")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to open hosts.txt: %v\n", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	var addresses []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		host := strings.TrimSpace(scanner.Text())
+		if host == "" {
+			continue
+		}
+		addresses = append(addresses, host+":8080")
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to read hosts.txt: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Create a context that can be cancelled by Ctrl+C.
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
