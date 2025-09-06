@@ -1,9 +1,18 @@
+#!/bin/bash
+
 # Step 1: Clone Git repository
 git clone git@gitlab.engr.illinois.edu:saik2/mp1-g02.git
 cd mp1-g02
 go mod init mp1-g02
 go mod tidy
 chmod +x ./mp1-g02/scripts/*.sh
+
+host=$(hostname)
+num=${host#fa25-cs425-02}
+num=${num%%.*}
+num=$((10#$num))
+
+touch machine.$num.log
 
 # Step 2: Install air for automatic reloading
 go install github.com/air-verse/air@latest
