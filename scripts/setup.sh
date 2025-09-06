@@ -5,7 +5,7 @@ git clone git@gitlab.engr.illinois.edu:saik2/mp1-g02.git
 cd mp1-g02
 go mod init mp1-g02
 go mod tidy
-chmod +x ./mp1-g02/scripts/*.sh
+chmod +x ./scripts/*.sh
 
 host=$(hostname)
 num=${host#fa25-cs425-02}
