@@ -15,12 +15,15 @@ read -p "Continue? (Y/N): " confirm && [[ $confirm =~ ^[Yy](es)?$ ]] || exit 1
 HOSTS_FILE="../hosts.txt"
 # Loop through hosts
 for HOST in $(cat $HOSTS_FILE); do
-  echo ">>> Transferring $file to $HOST"
-  scp "$file" saik2@"$HOST":/home/saik2/
+  (
+    echo ">>> Transferring $file to $HOST"
+    scp "$file" saik2@"$HOST":/home/saik2/
 
-  # If it's a .sh file, give execute permissions on the VM
-  if [[ "$file" == *.sh ]]; then
-    echo ">>> Setting execute permission on $HOST"
-    ssh saik2@"$HOST" "chmod +x /home/saik2/$(basename "$file")"
-  fi
+    # If it's a .sh file, give execute permissions on the VM
+    if [[ "$file" == *.sh ]]; then
+      echo ">>> Setting execute permission on $HOST"
+      ssh saik2@"$HOST" "chmod +x /home/saik2/$(basename "$file")"
+    fi
+  ) &
 done
+wait
