@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load remote username
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
+REMOTE_USER="${REMOTE_USER:-saik2}"
+
 # Ask for file to transfer
 read -p "Enter file name: " file
 
@@ -17,12 +22,12 @@ HOSTS_FILE="../hosts.txt"
 for HOST in $(cat $HOSTS_FILE); do
   (
     echo ">>> Transferring $file to $HOST"
-    scp "$file" saik2@"$HOST":/home/saik2/
+  scp "$file" "$REMOTE_USER@$HOST:~/"
 
     # If it's a .sh file, give execute permissions on the VM
     if [[ "$file" == *.sh ]]; then
       echo ">>> Setting execute permission on $HOST"
-      ssh saik2@"$HOST" "chmod +x /home/saik2/$(basename "$file")"
+  ssh "$REMOTE_USER@$HOST" "chmod +x \$HOME/$(basename "$file")"
     fi
   ) &
 done

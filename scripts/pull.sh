@@ -1,10 +1,15 @@
 #!/bin/bash
 
+# Load remote username
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
+REMOTE_USER="${REMOTE_USER:-saik2}"
+
 HOSTS_FILE="../hosts.txt"
 for HOST in $(cat $HOSTS_FILE); do
   (
     echo ">>> Pulling new code from repo on $HOST"
-    ssh saik2@"$HOST" "cd mp1-g02 && git pull"
+  ssh "$REMOTE_USER@$HOST" "cd mp1-g02 && git pull"
   ) &
 done
 wait

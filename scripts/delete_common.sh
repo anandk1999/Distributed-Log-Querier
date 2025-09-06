@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load remote username
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
+REMOTE_USER="${REMOTE_USER:-saik2}"
+
 HOSTS_FILE="../hosts.txt"
 
 TARGETS=("go" "go.mod" "*.log" "mp1-g02" "setup.log" "setup.sh" "tmp")
@@ -7,11 +12,11 @@ TARGETS=("go" "go.mod" "*.log" "mp1-g02" "setup.log" "setup.sh" "tmp")
 for HOST in $(cat "$HOSTS_FILE"); do
   (
     echo ">>> Cleaning specified files on $HOST"
-    ssh saik2@"$HOST" "
+    ssh "$REMOTE_USER@$HOST" "
       for item in ${TARGETS[@]}; do
-        if [ -e /home/saik2/\$item ]; then
-          echo \"Removing /home/saik2/\$item\"
-          rm -rf /home/saik2/\$item
+        if [ -e \$HOME/\$item ]; then
+          echo \"Removing \$HOME/\$item\"
+          rm -rf \$HOME/\$item
         fi
       done
     "

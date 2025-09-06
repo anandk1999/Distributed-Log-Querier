@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load remote username
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
+REMOTE_USER="${REMOTE_USER:-saik2}"
+
 HOSTS_FILE="../hosts.txt"
 
 read -r -d '' TEXT_TO_WRITE <<'EOF'
@@ -18,8 +23,8 @@ EOF
 for HOST in $(cat $HOSTS_FILE); do
   if [ -n "$HOST" ]; then
     (
-        echo ">>> Writing to log file in $HOST"
-        ssh saik2@"$HOST" "
+  echo ">>> Writing to log file in $HOST"
+  ssh "$REMOTE_USER@$HOST" "
         host=\$(hostname)
         num=\${host#fa25-cs425-02}
         num=\${num%%.*}

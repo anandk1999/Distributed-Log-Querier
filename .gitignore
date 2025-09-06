@@ -4,5 +4,8 @@
 
 # Client
 
+# Scripts
+/scripts/.env
+
 # Root
 /.DS_Store
