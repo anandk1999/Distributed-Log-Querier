@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -64,9 +63,7 @@ func handleConnection(conn net.Conn, machine string) {
 }
 
 func getMachineNumber() string {
-	filename := "mapping.txt"
-	filePath := filepath.Join("..", filename)
-	file, err := os.Open(filePath)
+	file, err := os.Open("mapping.txt")
 	if err != nil {
 		log.Fatalf("failed to open mapping file: %v", err)
 	}
