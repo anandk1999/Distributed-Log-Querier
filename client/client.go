@@ -54,8 +54,6 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 		}
 		defer conn.Close()
 
-		fmt.Print(fmt.Sprintf("Connected to %s", a))
-
 		_, err = conn.Write([]byte(message))
 		if err != nil {
 			results <- result{addr: a, err: err}
