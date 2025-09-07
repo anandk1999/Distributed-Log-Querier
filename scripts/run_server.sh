@@ -8,17 +8,19 @@ REMOTE_USER="${REMOTE_USER:-saik2}"
 HOSTS_FILE="../hosts.txt"
 PORT=8080
 
-for HOST in $(cat $HOSTS_FILE); do
+for HOST in $(cat "$HOSTS_FILE"); do
   if [ -n "$HOST" ]; then
     (
       echo ">>> Checking port $PORT on $HOST"
-  ssh "$REMOTE_USER@$HOST" "
+      ssh -T "$REMOTE_USER@$HOST" "
         if lsof -i TCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
           echo 'Port $PORT on $HOST is in use. Skipping air.'
         else
           echo 'Port $PORT on $HOST is free. Starting air...'
-          nohup air -c .air.toml > air.log 2>&1 &
+          cd mp1-g02
+          nohup air -c .air.toml > air.log 2>&1 < /dev/null &
         fi
+        exit
       "
     ) &
   fi
