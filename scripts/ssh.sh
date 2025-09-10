@@ -16,12 +16,18 @@ SSH_PRIVATE_KEY="$HOME/.ssh/cs_425_ssh"
 for HOST in $(cat $HOSTS_FILE); do
   (
   echo ">>> Transferring SSH keys to $HOST"
-  ssh-copy-id -i "$HOME/.ssh/cs_425_ssh.pub" "$REMOTE_USER@$HOST"
-  ssh "$REMOTE_USER@$HOST" "mkdir -p ~/.ssh && chmod 700 ~/.ssh && \
-      echo '
-  Host gitlab.engr.illinois.edu
-      IdentityFile ~/.ssh/cs_425_ssh
-  ' >> ~/.ssh/config && chmod 600 ~/.ssh/config"
+
+  ### If you are setting up for the first time, use the line below to copy over the ssh public key with password auth
+  sshpass -p "your_password" ssh-copy-id -i $SSH_PUBLIC_KEY "$REMOTE_USER@$HOST"
+  ### Else, comment command below to copy public key over
+  # ssh-copy-id -i $SSH_PUBLIC_KEY "$REMOTE_USER@$HOST"
+
+  ### UNCOMMENT THE COMMAND BELOW TO ADD GITLAB AS A HOST: 
+  # ssh "$REMOTE_USER@$HOST" "mkdir -p ~/.ssh && chmod 700 ~/.ssh && \
+  #     echo '
+  # Host gitlab.engr.illinois.edu
+  #     IdentityFile ~/.ssh/cs_425_ssh
+  # ' >> ~/.ssh/config && chmod 600 ~/.ssh/config"
   ) &
 done
 
