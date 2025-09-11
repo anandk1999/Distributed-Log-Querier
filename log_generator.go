@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -37,10 +38,12 @@ func main() {
 	}
 
 	// Somewhat Frequent pattern: only in even-numbered machines
-	if machine == "10" {
-		fmt.Print(int(machine[0] - '0'))
+	machineInt, err := strconv.Atoi(machine)
+	if err != nil {
+		fmt.Println("Cannot convert machine to integer.", err)
+		return
 	}
-	if machineInt := int(machine[0] - '0'); machineInt%2 == 0 {
+	if machineInt%2 == 0 {
 		for i := 0; i < 5; i++ {
 			fmt.Fprintf(file, "ERROR: something failed on machine %s at iter=%d\n", machine, i)
 		}
