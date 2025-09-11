@@ -37,6 +37,9 @@ func main() {
 	}
 
 	// Somewhat Frequent pattern: only in even-numbered machines
+	if machine == "10" {
+		fmt.Print(int(machine[0] - '0'))
+	}
 	if machineInt := int(machine[0] - '0'); machineInt%2 == 0 {
 		for i := 0; i < 5; i++ {
 			fmt.Fprintf(file, "ERROR: something failed on machine %s at iter=%d\n", machine, i)
