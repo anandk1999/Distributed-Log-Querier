@@ -64,11 +64,11 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 		scanner := bufio.NewScanner(conn)
 		for scanner.Scan() {
 			// Send each line as a separate result
-			out := strings.SplitN(scanner.Text(), " ", 3)
+			out, file, _ := strings.Cut(scanner.Text(), " ")
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
-			case results <- result{addr: a, resp: out[0], file_name: out[1]}:
+			case results <- result{addr: a, resp: out, file_name: file}:
 			}
 		}
 		// Check for scanner errors
