@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"mp1-g02/common"
 	"net"
 	"os"
 	"os/exec"
@@ -19,9 +20,8 @@ func parseCommand(input string) (string, []string) {
 	return parts[0], parts[1:]
 }
 
-func executeGrep(query string, machine string) (string, string) {
+func executeGrep(query string, log_file string) (string, string) {
 	name, args := parseCommand(query)
-	log_file := fmt.Sprintf("./machine.%s.log", machine)
 	args = append(args, log_file)
 	cmd := exec.Command(name, args...)
 	fmt.Println("Outputs from grep command: ")
@@ -53,14 +53,30 @@ func handleConnection(conn net.Conn, machine string) {
 		return
 	}
 
-	query := string(buffer[:n])
-	fmt.Printf("Received from client: %s\n", query)
+	var req common.ServerRequest
+	err = json.Unmarshal(buffer[:n], &req)
+	if err != nil {
+		fmt.Println("Error unmarshaling request:", err)
+		return
+	}
+
+	fmt.Printf("Received from client: %s\n", req.Input)
+
+	var log_file string
+	switch req.FileType {
+	case "demo":
+		log_file = fmt.Sprintf("./vm%s.log", machine)
+	case "unit":
+		log_file = fmt.Sprintf("./machine.%s.log", machine)
+	default:
+		log_file = fmt.Sprintf("./vm%s.log", machine)
+	}
 
 	// Send a response back to the client
-	out, log_file := executeGrep(query, machine)
-	response := map[string]string{
-		"output":   string(out),
-		"log_file": log_file,
+	out, log_file := executeGrep(req.Input, log_file)
+	response := common.ServerResponse{
+		Output:  string(out),
+		LogFile: log_file,
 	}
 	json_bytes, _ := json.Marshal(response)
 	_, err = conn.Write([]byte(append(json_bytes, '\n')))

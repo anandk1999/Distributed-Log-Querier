@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"mp1-g02/common"
 	"net"
 	"os"
 	"os/signal"
@@ -18,11 +19,6 @@ type result struct {
 	resp      string
 	file_name string
 	err       error
-}
-
-type ServerResponse struct {
-	Output  string `json:"output"`
-	LogFile string `json:"log_file"`
 }
 
 func fanIn(channels ...<-chan result) <-chan result {
@@ -73,7 +69,7 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			line := scanner.Text()
 
 			// Decode JSON
-			var resp ServerResponse
+			var resp common.ServerResponse
 			err := json.Unmarshal([]byte(line), &resp)
 			if err != nil {
 				fmt.Println("Error unmarshaling:", err)
@@ -101,6 +97,21 @@ func main() {
 	fmt.Print("Give me your grep command: ")
 	message, _ := reader.ReadString('\n')
 	message = strings.TrimSpace(message)
+
+	fmt.Print("File type (demo/unit): ")
+	fileType, _ := reader.ReadString('\n')
+	fileType = strings.TrimSpace(fileType)
+
+	// Build JSON request
+	req := common.ServerRequest{
+		Input:    message,
+		FileType: fileType,
+	}
+	jsonReq, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		os.Exit(1)
+	}
 
 	// Read hosts.txt and build address list
 	file, err := os.Open("../hosts.txt")
@@ -130,7 +141,7 @@ func main() {
 
 	var chans []<-chan result
 	for _, addr := range addresses {
-		chans = append(chans, connection(addr, message, ctx))
+		chans = append(chans, connection(addr, string(jsonReq), ctx))
 	}
 	c := fanIn(chans...)
 
