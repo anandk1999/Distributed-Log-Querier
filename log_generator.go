@@ -53,7 +53,7 @@ func main() {
 	}
 	for i := 0; i < 200; i++ {
 		msg := randomMsgs[rand.Intn(len(randomMsgs))]
-		fmt.Fprintf(file, msg)
+		fmt.Fprintf(file, "%s\n", msg)
 	}
 
 	fmt.Printf("Generated %s\n", filename)

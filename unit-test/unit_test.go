@@ -53,8 +53,8 @@ func contains(slice []string, s string) bool {
 func main() {
 	// Define patterns and expected machines
 	patterns := map[string][]string{
-		"RARETOKEN": {"machine.0"},       // rare pattern appears only on machine 0
-		"ERROR":     {"machine.0", "machine.2", "machine.4", "machine.6", "machine.8"}, // medium pattern on even machines
+		"RARETOKEN": {"machine.0"},                                                                                                                      // rare pattern appears only on machine 0
+		"ERROR":     {"machine.0", "machine.2", "machine.4", "machine.6", "machine.8"},                                                                  // medium pattern on even machines
 		"HEARTBEAT": {"machine.0", "machine.1", "machine.2", "machine.3", "machine.4", "machine.5", "machine.6", "machine.7", "machine.8", "machine.9"}, // frequent pattern on all
 	}
 
