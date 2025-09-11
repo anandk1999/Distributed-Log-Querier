@@ -18,10 +18,11 @@ func parseCommand(input string) (string, []string) {
 	if len(parts) == 0 {
 		return "", nil
 	}
+	operands := parts[1:]
 	if !slices.Contains(parts, "-c") {
-		parts = append([]string{"-c"}, parts...)
+		operands = append([]string{"-c"}, operands...)
 	}
-	return parts[0], parts[1:]
+	return parts[0], operands
 }
 
 func executeGrep(query string, log_file string) (string, string) {
