@@ -57,6 +57,7 @@ func handleConnection(conn net.Conn, machine string) {
 
 	// Send a response back to the client
 	out, log_file := executeGrep(query, machine)
+	fmt.Printf("SERVER OUTPUT BEFORE SENDING BACK TO CLIENT: %s", out)
 	_, err = conn.Write([]byte(out + " " + log_file + "\n"))
 	if err != nil {
 		fmt.Println("Error writing:", err)
