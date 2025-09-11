@@ -13,9 +13,10 @@ import (
 )
 
 type result struct {
-	addr string
-	resp string
-	err  error
+	addr      string
+	resp      string
+	file_name string
+	err       error
 }
 
 func fanIn(channels ...<-chan result) <-chan result {
@@ -63,10 +64,11 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 		scanner := bufio.NewScanner(conn)
 		for scanner.Scan() {
 			// Send each line as a separate result
+			out := strings.SplitN(scanner.Text(), " ", 3)
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
-			case results <- result{addr: a, resp: scanner.Text()}:
+			case results <- result{addr: a, resp: out[0], file_name: out[1]}:
 			}
 		}
 		// Check for scanner errors
@@ -121,7 +123,7 @@ func main() {
 			fmt.Printf("[%s] error: %v\n", r.addr, r.err)
 			continue
 		}
-		fmt.Printf("[%s] response:\n%s\n", r.addr, r.resp)
+		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 	}
 
 	os.Exit(0)

@@ -18,9 +18,10 @@ func parseCommand(input string) (string, []string) {
 	return parts[0], parts[1:]
 }
 
-func executeGrep(query string, machine string) string {
+func executeGrep(query string, machine string) (string, string) {
 	name, args := parseCommand(query)
-	args = append(args, fmt.Sprintf("./machine.%s.log", machine))
+	log_file := fmt.Sprintf("./machine.%s.log", machine)
+	args = append(args, log_file)
 	cmd := exec.Command(name, args...)
 	fmt.Println("Outputs from grep command: ")
 
@@ -37,7 +38,7 @@ func executeGrep(query string, machine string) string {
 
 	// Print the captured output
 	fmt.Println(string(output))
-	return string(output)
+	return string(output), log_file
 }
 
 func handleConnection(conn net.Conn, machine string) {
@@ -55,7 +56,8 @@ func handleConnection(conn net.Conn, machine string) {
 	fmt.Printf("Received from client: %s\n", query)
 
 	// Send a response back to the client
-	_, err = conn.Write([]byte(executeGrep(query, machine)))
+	out, log_file := executeGrep(query, machine)
+	_, err = conn.Write([]byte(out + " " + log_file + "\n"))
 	if err != nil {
 		fmt.Println("Error writing:", err)
 		return
