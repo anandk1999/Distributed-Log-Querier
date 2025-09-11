@@ -9,7 +9,7 @@ import (
 
 func runClient(pattern string) string {
 	cmd := exec.Command("go", "run", "client.go")
-	stdin := bytes.NewBufferString("grep -c" + pattern + "\n")
+	stdin := bytes.NewBufferString("grep -c " + pattern + "\n")
 	cmd.Stdin = stdin
 
 	output, err := cmd.CombinedOutput()
