@@ -69,6 +69,7 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
 			case results <- result{addr: a, resp: out, file_name: file}:
+				return
 			}
 		}
 		// Check for scanner errors
