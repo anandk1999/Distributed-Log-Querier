@@ -27,7 +27,7 @@ func main() {
 	// --- Known patterns ---
 
 	// Rare pattern: only put this in machine 0
-	if machine == "0" {
+	if machine == "1" {
 		fmt.Fprintln(file, "ALERT: RARETOKEN found on machine 0")
 	}
 
