@@ -9,7 +9,7 @@ import (
 
 func runClient(pattern string) string {
 	cmd := exec.Command("go", "run", "client.go")
-	stdin := bytes.NewBufferString(pattern + "\n")
+	stdin := bytes.NewBufferString("grep -c" + pattern + "\n")
 	cmd.Stdin = stdin
 
 	output, err := cmd.CombinedOutput()
@@ -28,7 +28,7 @@ func checkPatternInOutput(pattern string, output string, expectedMachines []stri
 	}
 
 	// Check no unexpected machines contain the pattern
-	for i := 0; i < 10; i++ {
+	for i := 1; i < 11; i++ {
 		machine := fmt.Sprintf("machine.%d", i)
 		found := strings.Contains(output, machine) && strings.Contains(output, pattern)
 		expected := contains(expectedMachines, machine)
@@ -53,9 +53,9 @@ func contains(slice []string, s string) bool {
 func main() {
 	// Define patterns and expected machines
 	patterns := map[string][]string{
-		"RARETOKEN": {"machine.0"},                                                                                                                      // rare pattern appears only on machine 0
-		"ERROR":     {"machine.0", "machine.2", "machine.4", "machine.6", "machine.8"},                                                                  // medium pattern on even machines
-		"HEARTBEAT": {"machine.0", "machine.1", "machine.2", "machine.3", "machine.4", "machine.5", "machine.6", "machine.7", "machine.8", "machine.9"}, // frequent pattern on all
+		"RARETOKEN": {"machine.1"},                                                                                                                       // rare pattern appears only on machine 0
+		"ERROR":     {"machine.10", "machine.2", "machine.4", "machine.6", "machine.8"},                                                                  // medium pattern on even machines
+		"HEARTBEAT": {"machine.10", "machine.1", "machine.2", "machine.3", "machine.4", "machine.5", "machine.6", "machine.7", "machine.8", "machine.9"}, // frequent pattern on all
 	}
 
 	allPassed := true
