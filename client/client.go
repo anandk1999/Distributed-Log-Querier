@@ -80,7 +80,6 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 				continue
 			}
 
-			fmt.Printf("Outputs from channel: %s and %s", resp.Output, resp.LogFile)
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return

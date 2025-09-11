@@ -58,7 +58,6 @@ func handleConnection(conn net.Conn, machine string) {
 
 	// Send a response back to the client
 	out, log_file := executeGrep(query, machine)
-	fmt.Printf("SERVER OUTPUT BEFORE SENDING BACK TO CLIENT: %s from %s", out, log_file)
 	response := map[string]string{
 		"output":   string(out),
 		"log_file": log_file,
