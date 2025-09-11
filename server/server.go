@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -16,6 +17,9 @@ func parseCommand(input string) (string, []string) {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return "", nil
+	}
+	if !slices.Contains(parts, "-c") {
+		parts = append([]string{"-c"}, parts...)
 	}
 	return parts[0], parts[1:]
 }
