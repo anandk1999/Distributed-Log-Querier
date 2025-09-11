@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -58,8 +59,12 @@ func handleConnection(conn net.Conn, machine string) {
 	// Send a response back to the client
 	out, log_file := executeGrep(query, machine)
 	fmt.Printf("SERVER OUTPUT BEFORE SENDING BACK TO CLIENT: %s from %s", out, log_file)
-	formatted_output := string(out + " " + log_file + "\n")
-	_, err = conn.Write([]byte(formatted_output))
+	response := map[string]string{
+		"output":   string(out),
+		"log_file": log_file,
+	}
+	json_bytes, _ := json.Marshal(response)
+	_, err = conn.Write([]byte(append(json_bytes, '\n')))
 	if err != nil {
 		fmt.Println("Error writing:", err)
 		return

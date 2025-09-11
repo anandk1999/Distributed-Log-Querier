@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -17,6 +18,11 @@ type result struct {
 	resp      string
 	file_name string
 	err       error
+}
+
+type ServerResponse struct {
+	Output  string `json:"output"`
+	LogFile string `json:"log_file"`
 }
 
 func fanIn(channels ...<-chan result) <-chan result {
@@ -64,11 +70,21 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 		scanner := bufio.NewScanner(conn)
 		for scanner.Scan() {
 			// Send each line as a separate result
-			out, file, _ := strings.Cut(scanner.Text(), " ")
+			line := scanner.Text()
+
+			// Decode JSON
+			var resp ServerResponse
+			err := json.Unmarshal([]byte(line), &resp)
+			if err != nil {
+				fmt.Println("Error unmarshaling:", err)
+				continue
+			}
+
+			fmt.Printf("Outputs from channel: %s and %s", resp.Output, resp.LogFile)
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
-			case results <- result{addr: a, resp: out, file_name: file}:
+			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
 				return
 			}
 		}
