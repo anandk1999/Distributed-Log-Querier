@@ -8,8 +8,7 @@ import (
 )
 
 func runClient_curr(pattern string) (string, error) {
-	cmd := exec.Command("go", "run", ".")
-	cmd.Dir = "client"
+	cmd := exec.Command("go", "run", "../client/client")
 	cmd.Stdin = bytes.NewBufferString("grep -c " + pattern + "\n")
 	out, err := cmd.CombinedOutput()
 	return string(out), err

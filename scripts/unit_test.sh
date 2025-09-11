@@ -11,7 +11,7 @@ for HOST in $(cat "$HOSTS_FILE"); do
   if [ -n "$HOST" ]; then
     (           
       echo ">>> Execute unit_test.go on $HOST"
-      ssh -T "$REMOTE_USER@$HOST" "cd mp1-g02/unit-test && go run unit_test.go"
+      ssh -T "$REMOTE_USER@$HOST" "cd mp1-g02 && go test -v ./unit-test"
     ) &
   fi
 done < "$HOSTS_FILE"
