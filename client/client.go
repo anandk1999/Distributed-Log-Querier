@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"slices"
 )
 
 type result struct {
@@ -21,6 +22,8 @@ type result struct {
 	file_name string
 	err       error
 }
+
+var countMap = make(map[string]int)
 
 func fanIn(channels ...<-chan result) <-chan result {
 	out := make(chan result)
@@ -82,6 +85,7 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
 			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
+				countMap[a]++
 				return
 			}
 		}
@@ -95,10 +99,19 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 }
 
 func main() {
+	var countFlag bool = false
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Give me your grep command: ")
 	message, _ := reader.ReadString('\n')
 	message = strings.TrimSpace(message)
+
+	parts := strings.Fields(message)
+	if len(parts) == 0 {
+		fmt.Println("Incorrect grep command:")
+	}
+	if !slices.Contains(parts, "-c") {
+		countFlag = true;
+	}
 
 	fmt.Print("File type (demo/unit): ")
 	fileType, _ := reader.ReadString('\n')
@@ -155,11 +168,23 @@ func main() {
 			continue
 		}
 		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
-		count, err := strconv.Atoi(strings.TrimSpace(r.resp))
-		if err != nil {
-			fmt.Println("Cannot convert response to integer")
+
+		if (!countFlag){
+			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
+			if err != nil {
+				fmt.Println("Cannot convert response to integer")
+			}
+			total_count += count
 		}
-		total_count += count
+		
+	}
+
+	if (countFlag){
+		for key, value := range countMap {
+    		fmt.Println(key, value)
+			total_count += value
+		}
+
 	}
 
 	fmt.Println("Total count is: ", total_count)

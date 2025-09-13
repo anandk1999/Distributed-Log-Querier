@@ -19,9 +19,9 @@ func parseCommand(input string) (string, []string) {
 		return "", nil
 	}
 	operands := parts[1:]
-	if !slices.Contains(parts, "-c") {
-		operands = append([]string{"-c"}, operands...)
-	}
+	// if !slices.Contains(parts, "-c") {
+	// 	operands = append([]string{"-c"}, operands...)
+	// }
 	return parts[0], operands
 }
 
