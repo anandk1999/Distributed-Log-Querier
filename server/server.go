@@ -78,7 +78,7 @@ func handleConnection(conn net.Conn, machine string) {
 
 	// Send a response back to the client
 	out, log_file := executeGrep(req.Input, log_file)
-	fmt.Println(out)
+	fmt.Println(out + "/N")
 	response := common.ServerResponse{
 		Output:  string(out),
 		LogFile: log_file,
