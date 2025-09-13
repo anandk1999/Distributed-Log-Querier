@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 	"testing"
@@ -9,7 +10,7 @@ import (
 
 func runClient_curr(pattern string) (string, error) {
 	cmd := exec.Command("go", "run", "../client/client.go")
-	cmd.Stdin = bytes.NewBufferString("grep -c " + pattern + "\n")
+	cmd.Stdin = bytes.NewBufferString("grep -c " + pattern + "\n" + "unit\n")
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
@@ -23,14 +24,22 @@ func containsAll(out string, want []string) bool {
 	return true
 }
 
+func containsCount(out string, count int) bool {
+	if !strings.Contains(out, fmt.Sprintf("Total count is:  %d", count)) {
+		return false
+	}
+	return true
+}
+
 func TestPatterns(t *testing.T) {
 	tests := []struct {
 		pattern string
 		expect  []string
+		count   int
 	}{
-		{"RARETOKEN", []string{"machine.1"}},
-		{"ERROR", []string{"machine.2", "machine.4", "machine.6", "machine.8", "machine.10"}},
-		{"HEARTBEAT", []string{"machine.1", "machine.2", "machine.3", "machine.4", "machine.5", "machine.6", "machine.7", "machine.8", "machine.9", "machine.10"}},
+		{"RARETOKEN", []string{"machine.1"}, 1},
+		{"ERROR", []string{"machine.2", "machine.4", "machine.6", "machine.8", "machine.10"}, 25},
+		{"HEARTBEAT", []string{"machine.1", "machine.2", "machine.3", "machine.4", "machine.5", "machine.6", "machine.7", "machine.8", "machine.9", "machine.10"}, 500},
 	}
 	for _, tc := range tests {
 		out, err := runClient_curr(tc.pattern)
@@ -39,6 +48,9 @@ func TestPatterns(t *testing.T) {
 		}
 		if !containsAll(out, tc.expect) {
 			t.Errorf("pattern %s: missing expected machines in output:\n%s", tc.pattern, out)
+		}
+		if !containsCount(out, tc.count) {
+			t.Errorf("pattern %s: mismatching total count in output:\n%s", tc.pattern, out)
 		}
 	}
 }

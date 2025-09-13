@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -38,6 +39,7 @@ func fanIn(channels ...<-chan result) <-chan result {
 	go func() {
 		wg.Wait()
 		close(out)
+
 	}()
 
 	return out
@@ -145,13 +147,22 @@ func main() {
 	}
 	c := fanIn(chans...)
 
+	total_count := 0
+
 	for r := range c {
 		if r.err != nil {
-			fmt.Printf("[%s] error: %v\n", r.addr, r.err)
+			// fmt.Printf("[%s] error: %v\n", r.addr, r.err)
 			continue
 		}
 		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
+		count, err := strconv.Atoi(strings.TrimSpace(r.resp))
+		if err != nil {
+			fmt.Println("Cannot convert response to integer")
+		}
+		total_count += count
 	}
+
+	fmt.Println("Total count is: ", total_count)
 
 	os.Exit(0)
 }
