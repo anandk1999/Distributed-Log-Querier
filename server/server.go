@@ -78,17 +78,16 @@ func handleConnection(conn net.Conn, machine string) {
 
 	// Send a response back to the client
 	out, log_file := executeGrep(req.Input, log_file)
-	for line := range strings.Split(out, "\n") {
-		response := common.ServerResponse{
-			Output:  string(line),
-			LogFile: log_file,
-		}
-		json_bytes, _ := json.Marshal(response)
-		_, err = conn.Write([]byte(append(json_bytes, '\n')))
-		if err != nil {
-			fmt.Println("Error writing:", err)
-			return
-		}
+	fmt.Println(out)
+	response := common.ServerResponse{
+		Output:  string(out),
+		LogFile: log_file,
+	}
+	json_bytes, _ := json.Marshal(response)
+	_, err = conn.Write([]byte(append(json_bytes, '\n')))
+	if err != nil {
+		fmt.Println("Error writing:", err)
+		return
 	}
 }
 
