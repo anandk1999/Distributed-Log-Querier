@@ -3,14 +3,20 @@
 LOG_DIR="/Users/ASUS1/Desktop/Fall 2025 Semester (UIUC)/Distributed Systems/Machine Problems/MP1/MP1 Demo Data FA22"
 CLIENT_OUTPUT_FILE="../client_output.txt"
 PATTERN='[0-9]{2}/Aug/[0-9]{4}'
-PATTERN='AppleWebKit/5320'
-PATTERN='138.171.13.249'
+# PATTERN='13:[0-9]{2}:[0-9]{2}'
+# PATTERN='AppleWebKit/5320'
+# PATTERN='138.171.13.249'
+# PATTERN='GET'
+# PATTERN='Intel'
+# PATTERN='http'
+# PATTERN='14.0.898.0'
+# PATTERN='http://hensley.org/'
 
 read -p "Enter the log type (e.g., demo or unit): " LOG_TYPE
 
 echo "Running client.go and saving output to $CLIENT_OUTPUT_FILE..."
 echo `pwd`
-echo "grep -c $PATTERN \n $LOG_TYPE" | go run ../client/client.go > "$CLIENT_OUTPUT_FILE"
+echo "grep -c -E $PATTERN \n $LOG_TYPE" | go run ../client/client.go > "$CLIENT_OUTPUT_FILE"
 
 if [[ $? -ne 0 ]]; then
     echo "❌ Failed to run client.go. Exiting."
@@ -30,7 +36,7 @@ local_counts=()
 for log_file in "$LOG_DIR"/*.log; do
     if [[ -f "$log_file" ]]; then
         filename=$(basename "$log_file")
-        count=$(grep -c "$PATTERN" "$log_file")
+        count=$(grep -c -E "$PATTERN" "$log_file")
         echo $count
         local_filenames+=("$filename")
         local_counts+=("$count")
