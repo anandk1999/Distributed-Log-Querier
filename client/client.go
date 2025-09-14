@@ -9,11 +9,11 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"syscall"
-	"slices"
 )
 
 type result struct {
@@ -74,17 +74,25 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			line := scanner.Text()
 
 			// Decode JSON
-			var resp common.ServerResponse
-			err := json.Unmarshal([]byte(line), &resp)
-			if err != nil {
-				fmt.Println("Error unmarshaling:", err)
-				continue
-			}
+			// var resp common.ServerResponse
+			// err := json.Unmarshal([]byte(line), &resp)
+			// if err != nil {
+			// 	fmt.Println("Error unmarshaling:", err)
+			// 	continue
+			// }
+
+			// select {
+			// case <-ctx.Done(): // Check if the operation was cancelled.
+			// 	return
+			// case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
+			// 	countMap[a]++
+			// 	return
+			// }
 
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
-			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
+			case results <- result{addr: a, resp: line, file_name: "temp"}:
 				countMap[a]++
 				return
 			}
@@ -110,7 +118,7 @@ func main() {
 		fmt.Println("Incorrect grep command:")
 	}
 	if !slices.Contains(parts, "-c") {
-		countFlag = true;
+		countFlag = true
 	}
 
 	fmt.Print("File type (demo/unit): ")
@@ -169,19 +177,19 @@ func main() {
 		}
 		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 
-		if (!countFlag){
+		if !countFlag {
 			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
 			if err != nil {
 				fmt.Println("Cannot convert response to integer")
 			}
 			total_count += count
 		}
-		
+
 	}
 
-	if (countFlag){
+	if countFlag {
 		for key, value := range countMap {
-    		fmt.Println(key, value)
+			fmt.Println(key, value)
 			total_count += value
 		}
 
