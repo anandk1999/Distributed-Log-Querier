@@ -168,10 +168,10 @@ func main() {
 
 	for r := range c {
 		if r.err != nil {
-			// fmt.Printf("[%s] error: %v\n", r.addr, r.err)
+			fmt.Printf("[%s] error: %v\n", r.addr, r.err)
 			continue
 		}
-		// fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
+		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 
 		if !countFlag {
 			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
