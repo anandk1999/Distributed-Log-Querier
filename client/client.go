@@ -74,28 +74,21 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			line := scanner.Text()
 
 			// Decode JSON
-			// var resp common.ServerResponse
-			// err := json.Unmarshal([]byte(line), &resp)
-			// if err != nil {
-			// 	fmt.Println("Error unmarshaling:", err)
-			// 	continue
-			// }
-
-			// select {
-			// case <-ctx.Done(): // Check if the operation was cancelled.
-			// 	return
-			// case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
-			// 	countMap[a]++
-			// 	return
-			// }
+			var resp common.ServerResponse
+			err := json.Unmarshal([]byte(line), &resp)
+			if err != nil {
+				fmt.Println("Error unmarshaling:", err)
+				continue
+			}
 
 			select {
 			case <-ctx.Done(): // Check if the operation was cancelled.
 				return
-			case results <- result{addr: a, resp: line, file_name: "temp"}:
+			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
 				countMap[a]++
 				return
 			}
+
 		}
 		// Check for scanner errors
 		if err := scanner.Err(); err != nil {

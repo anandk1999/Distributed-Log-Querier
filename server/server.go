@@ -78,20 +78,15 @@ func handleConnection(conn net.Conn, machine string) {
 
 	// Send a response back to the client
 	out, log_file := executeGrep(req.Input, log_file)
-	// fmt.Println(out + "/N")
-	// response := common.ServerResponse{
-	// 	Output:  string(out),
-	// 	LogFile: log_file,
-	// }
-	// json_bytes, _ := json.Marshal(response)
-	// _, err = conn.Write([]byte(append(json_bytes, '\n')))
-	n, err = conn.Write([]byte(out))
+	response := common.ServerResponse{
+		Output:  string(out),
+		LogFile: log_file,
+	}
+	json_bytes, _ := json.Marshal(response)
+	_, err = conn.Write([]byte(append(json_bytes, '\n')))
 	if err != nil {
 		fmt.Println("Error writing:", err)
 		return
-	}
-	if n < len([]byte(out)) {
-		fmt.Println("Not all data was sent")
 	}
 }
 
