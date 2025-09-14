@@ -23,7 +23,10 @@ type result struct {
 	err       error
 }
 
-var countMap = make(map[string]int)
+var (
+	countMap = make(map[string]int)
+	countMu  sync.Mutex
+)
 
 func fanIn(channels ...<-chan result) <-chan result {
 	out := make(chan result)
@@ -82,7 +85,9 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			case <-ctx.Done():
 				return
 			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
+				countMu.Lock()
 				countMap[a]++
+				countMu.Unlock()
 				// do NOT return; keep streaming until server closes or ctx cancels
 			}
 		}
@@ -177,10 +182,12 @@ func main() {
 	}
 
 	if countFlag {
+		countMu.Lock()
 		for key, value := range countMap {
 			fmt.Println(key, value)
 			total_count += value
 		}
+		countMu.Unlock()
 
 	}
 
