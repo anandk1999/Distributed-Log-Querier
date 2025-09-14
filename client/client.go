@@ -70,25 +70,21 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 
 		scanner := bufio.NewScanner(conn)
 		for scanner.Scan() {
-			// Send each line as a separate result
+			// Each line is a JSON object: {output, log_file}
 			line := scanner.Text()
-
-			// Decode JSON
 			var resp common.ServerResponse
-			err := json.Unmarshal([]byte(line), &resp)
-			if err != nil {
+			if err := json.Unmarshal([]byte(line), &resp); err != nil {
 				fmt.Println("Error unmarshaling:", err)
 				continue
 			}
 
 			select {
-			case <-ctx.Done(): // Check if the operation was cancelled.
+			case <-ctx.Done():
 				return
 			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
 				countMap[a]++
-				return
+				// do NOT return; keep streaming until server closes or ctx cancels
 			}
-
 		}
 		// Check for scanner errors
 		if err := scanner.Err(); err != nil {

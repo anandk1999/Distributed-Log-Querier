@@ -24,26 +24,72 @@ func parseCommand(input string) (string, []string) {
 	return parts[0], operands
 }
 
-func executeGrep(query string, log_file string) (string, string) {
+// streamGrep runs the grep command and streams each matching line back as a
+// newline-delimited JSON object over the provided connection.
+func streamGrep(conn net.Conn, query string, logFile string) {
 	name, args := parseCommand(query)
-	args = append(args, log_file)
-	cmd := exec.Command(name, args...)
-	fmt.Println("Outputs from grep command: ")
+	args = append(args, logFile)
 
-	// Run the command and capture its output
-	output, err := cmd.Output()
+	cmd := exec.Command(name, args...)
+
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		// Handle potential errors, such as the command not being found or exiting with a non-zero status
-		if exitError, ok := err.(*exec.ExitError); ok {
-			log.Printf("Grep exited with error: %s\nStderr: %s", exitError.Error(), exitError.Stderr)
-		} else {
-			log.Fatalf("Failed to run grep: %v", err)
-		}
+		log.Printf("failed to get stdout pipe: %v", err)
+		return
 	}
 
-	// Print the captured output
-	fmt.Println(string(output))
-	return string(output), log_file
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		log.Printf("failed to get stderr pipe: %v", err)
+		return
+	}
+
+	if err := cmd.Start(); err != nil {
+		log.Printf("failed to start grep: %v", err)
+		return
+	}
+
+	// Stream matches line-by-line
+	outScanner := bufio.NewScanner(stdout)
+	for outScanner.Scan() {
+		line := outScanner.Text()
+		response := common.ServerResponse{Output: line, LogFile: logFile}
+		if b, err := json.Marshal(response); err == nil {
+			// newline-delimited JSON for the client scanner
+			if _, werr := conn.Write(append(b, '\n')); werr != nil {
+				log.Printf("failed to write to client: %v", werr)
+				break
+			}
+		} else {
+			log.Printf("failed to marshal response: %v", err)
+			break
+		}
+	}
+	if err := outScanner.Err(); err != nil {
+		log.Printf("stdout scan error: %v", err)
+	}
+
+	// Drain/inspect stderr (optional): read and log any errors after command finishes
+	// We purposefully start a goroutine to avoid blocking if grep is still running
+	go func() {
+		s := bufio.NewScanner(stderr)
+		for s.Scan() {
+			log.Printf("grep stderr: %s", s.Text())
+		}
+	}()
+
+	// Wait for the command to finish. grep returns exit code 1 when no matches are found.
+	if err := cmd.Wait(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if exitErr.ExitCode() == 1 {
+				// No matches; not an actual failure for our streaming use-case.
+				return
+			}
+			log.Printf("grep exited with error code %d", exitErr.ExitCode())
+			return
+		}
+		log.Printf("error waiting for grep to finish: %v", err)
+	}
 }
 
 func handleConnection(conn net.Conn, machine string) {
@@ -76,18 +122,8 @@ func handleConnection(conn net.Conn, machine string) {
 		log_file = fmt.Sprintf("./vm%s.log", machine)
 	}
 
-	// Send a response back to the client
-	out, log_file := executeGrep(req.Input, log_file)
-	response := common.ServerResponse{
-		Output:  string(out),
-		LogFile: log_file,
-	}
-	json_bytes, _ := json.Marshal(response)
-	_, err = conn.Write([]byte(append(json_bytes, '\n')))
-	if err != nil {
-		fmt.Println("Error writing:", err)
-		return
-	}
+	// Stream responses back to the client, one JSON per matching line
+	streamGrep(conn, req.Input, log_file)
 }
 
 func getMachineNumber() string {
