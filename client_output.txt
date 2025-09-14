@@ -1,1 +1,22 @@
-Give me your grep command: File type (demo/unit): Total count is:  0
+Give me your grep command: File type (demo/unit): [fa25-cs425-0206.cs.illinois.edu:8080 from ./vm6.log] response:
+./vm6.log:0
+[fa25-cs425-0210.cs.illinois.edu:8080 from ./vm10.log] response:
+./vm10.log:0
+[fa25-cs425-0203.cs.illinois.edu:8080 from ./vm3.log] response:
+./vm3.log:0
+[fa25-cs425-0202.cs.illinois.edu:8080 from ./vm2.log] response:
+./vm2.log:0
+[fa25-cs425-0201.cs.illinois.edu:8080 from ./vm1.log] response:
+./vm1.log:1
+[fa25-cs425-0207.cs.illinois.edu:8080 from ./vm7.log] response:
+./vm7.log:0
+[fa25-cs425-0208.cs.illinois.edu:8080 from ./vm8.log] response:
+./vm8.log:0
+[fa25-cs425-0205.cs.illinois.edu:8080 from ./vm5.log] response:
+./vm5.log:0
+[fa25-cs425-0204.cs.illinois.edu:8080 from ./vm4.log] response:
+./vm4.log:0
+[fa25-cs425-0209.cs.illinois.edu:8080 from ./vm9.log] response:
+./vm9.log:0
+Total count is:  1
+Total time taken for last byte in last vm:  275.838625ms

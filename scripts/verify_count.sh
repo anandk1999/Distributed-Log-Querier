@@ -4,7 +4,7 @@ LOG_DIR="/Users/ASUS1/Desktop/Fall 2025 Semester (UIUC)/Distributed Systems/Mach
 CLIENT_OUTPUT_FILE="../client_output.txt"
 PATTERN='[0-9]{2}/Aug/[0-9]{4}'
 PATTERN='AppleWebKit/5320'
-PATTERN='95.76.87.79'
+PATTERN='138.171.13.249'
 
 read -p "Enter the log type (e.g., demo or unit): " LOG_TYPE
 
