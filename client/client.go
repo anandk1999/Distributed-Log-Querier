@@ -174,8 +174,8 @@ func main() {
 		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 
 		if !countFlag {
-			// count, err := strconv.Atoi(strings.TrimSpace(r.resp))
-			count, err := strconv.Atoi(strings.Split(strings.TrimSpace(r.resp), ":")[1])
+			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
+			// count, err := strconv.Atoi(strings.Split(strings.TrimSpace(r.resp), ":")[1])
 			if err != nil {
 				fmt.Println("Cannot convert response to integer")
 			}
