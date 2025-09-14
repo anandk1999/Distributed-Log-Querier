@@ -10,3 +10,4 @@
 # Root
 /.DS_Store
 /go.mod
+/client_output.txt
