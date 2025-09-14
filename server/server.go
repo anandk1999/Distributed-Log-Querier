@@ -85,10 +85,13 @@ func handleConnection(conn net.Conn, machine string) {
 	// }
 	// json_bytes, _ := json.Marshal(response)
 	// _, err = conn.Write([]byte(append(json_bytes, '\n')))
-	_, err = conn.Write([]byte(out))
+	n, err = conn.Write([]byte(out))
 	if err != nil {
 		fmt.Println("Error writing:", err)
 		return
+	}
+	if n < len([]byte(out)) {
+		fmt.Println("Not all data was sent")
 	}
 }
 
