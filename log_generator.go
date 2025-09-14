@@ -1,3 +1,4 @@
+// log_generator: creates a small synthetic log file for a given machine number.
 package main
 
 import (
@@ -37,7 +38,7 @@ func main() {
 		fmt.Fprintf(file, "INFO: HEARTBEAT OK machine=%s cycle=%d\n", machine, i)
 	}
 
-	// Somewhat Frequent pattern: only in even-numbered machines
+	// Somewhat frequent pattern: only in even-numbered machines
 	machineInt, err := strconv.Atoi(machine)
 	if err != nil {
 		fmt.Println("Cannot convert machine to integer.", err)

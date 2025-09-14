@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Starts the server using air on all hosts if port 8080 is free.
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
@@ -11,7 +12,7 @@ PORT=8080
 for HOST in $(cat "$HOSTS_FILE"); do
   if [ -n "$HOST" ]; then
     (
-      echo ">>> Checking port $PORT on $HOST"
+  echo ">>> Checking port $PORT on $HOST"
       ssh -T "$REMOTE_USER@$HOST" "
         if lsof -i TCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
           echo 'Port $PORT on $HOST is in use. Skipping air.'

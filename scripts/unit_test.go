@@ -1,3 +1,5 @@
+// curr_test: integration tests that run the client with patterns and verify
+// machines present in output and total counts. Uses go run on the client.
 package main
 
 import (

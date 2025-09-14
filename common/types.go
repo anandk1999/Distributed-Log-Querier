@@ -1,3 +1,4 @@
+// common: structs shared by client and server for request/response payloads.
 package common
 
 type ServerRequest struct {

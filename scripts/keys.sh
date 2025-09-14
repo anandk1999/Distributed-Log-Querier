@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Copies your SSH keys to each VM (~/.ssh). Assumes keys exist locally.
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"

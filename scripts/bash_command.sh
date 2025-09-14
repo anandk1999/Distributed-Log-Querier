@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Runs an arbitrary shell command on all hosts listed in hosts.txt.
+# Example: ./bash_command.sh 'uname -a'
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"

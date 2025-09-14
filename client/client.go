@@ -1,3 +1,6 @@
+// client: tiny CLI that sends a grep command to all servers and streams results.
+// It reads a grep-style command and a file type (demo/unit), fans out requests
+// to all hosts in hosts.txt, and aggregates the streaming responses.
 package main
 
 import (
@@ -24,11 +27,8 @@ type result struct {
 	err       error
 }
 
-var (
-	countMap = make(map[string]int)
-	countMu  sync.Mutex
-)
-
+// fanIn merges many read-only result channels into one channel. When all
+// inputs close, the output is closed too. This lets us range over one stream.
 func fanIn(channels ...<-chan result) <-chan result {
 	out := make(chan result)
 	var wg sync.WaitGroup
@@ -52,6 +52,9 @@ func fanIn(channels ...<-chan result) <-chan result {
 	return out
 }
 
+// connection dials one server, sends the JSON request, and streams newline-
+// delimited JSON objects back. We keep pushing results until the server closes
+// the connection or the context is canceled.
 func connection(a string, message string, ctx context.Context) <-chan result {
 	results := make(chan result)
 
@@ -86,10 +89,6 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 			case <-ctx.Done():
 				return
 			case results <- result{addr: a, resp: resp.Output, file_name: resp.LogFile}:
-				countMu.Lock()
-				countMap[a]++
-				countMu.Unlock()
-				// do NOT return; keep streaming until server closes or ctx cancels
 			}
 		}
 		// Check for scanner errors
@@ -103,19 +102,26 @@ func connection(a string, message string, ctx context.Context) <-chan result {
 
 func main() {
 	var countFlag bool = false
+
+	counts := map[string]int{}
 	reader := bufio.NewReader(os.Stdin)
+
+	// Ask for user grep command
 	fmt.Print("Give me your grep command: ")
 	message, _ := reader.ReadString('\n')
 	message = strings.TrimSpace(message)
 
+	// If grep command is empty, then don't accept
 	parts := strings.Fields(message)
 	if len(parts) == 0 {
 		fmt.Println("Incorrect grep command:")
 	}
+	// If user didn't pass -c, we'll count lines locally by tallying messages.
 	if !slices.Contains(parts, "-c") {
 		countFlag = true
 	}
 
+	// Determine if log file is vm[0-9].log or machine.i.log
 	fmt.Print("File type (demo/unit): ")
 	fileType, _ := reader.ReadString('\n')
 	fileType = strings.TrimSpace(fileType)
@@ -131,7 +137,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Read hosts.txt and build address list
+	// Read hosts.txt and build address list (host:8080 on each line)
 	file, err := os.Open("../hosts.txt")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open hosts.txt: %v\n", err)
@@ -153,7 +159,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create a context that can be cancelled by Ctrl+C.
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -168,10 +173,9 @@ func main() {
 
 	for r := range c {
 		if r.err != nil {
-			// fmt.Printf("[%s] error: %v\n", r.addr, r.err)
 			continue
 		}
-		// fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
+		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 
 		if !countFlag {
 			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
@@ -180,19 +184,18 @@ func main() {
 				fmt.Println("Cannot convert response to integer")
 			}
 			total_count += count
+		} else {
+			counts[r.addr]++
 		}
 
 	}
 	end := time.Since(start)
 
 	if countFlag {
-		countMu.Lock()
-		for key, value := range countMap {
+		for key, value := range counts {
 			fmt.Println(key, value)
 			total_count += value
 		}
-		countMu.Unlock()
-
 	}
 
 	fmt.Println("Total count is: ", total_count)

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Kills any process listening on port 8080 on a specific VM (by number).
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"

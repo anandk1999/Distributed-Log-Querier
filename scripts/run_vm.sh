@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Powers on each VM via the campus tooling using expect. Requires `pass` set up
+# with an entry named uiuc-vm-auth that stores the password.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 REMOTE_USER="${REMOTE_USER:-saik2}"

@@ -1,3 +1,5 @@
+// server: listens on :8080, runs the requested grep against the local log,
+// and streams each matching line back as JSON. One goroutine per client.
 package main
 
 import (
@@ -12,6 +14,8 @@ import (
 	"strings"
 )
 
+// parseCommand splits a shell-like command into the binary name and args.
+// We keep it simple here since we only expect grep-style input.
 func parseCommand(input string) (string, []string) {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
@@ -24,8 +28,7 @@ func parseCommand(input string) (string, []string) {
 	return parts[0], operands
 }
 
-// streamGrep runs the grep command and streams each matching line back as a
-// newline-delimited JSON object over the provided connection.
+// streamGrep runs grep and sends newline-delimited JSON for each match.
 func streamGrep(conn net.Conn, query string, logFile string) {
 	name, args := parseCommand(query)
 	args = append(args, logFile)
@@ -69,8 +72,7 @@ func streamGrep(conn net.Conn, query string, logFile string) {
 		log.Printf("stdout scan error: %v", err)
 	}
 
-	// Drain/inspect stderr (optional): read and log any errors after command finishes
-	// We purposefully start a goroutine to avoid blocking if grep is still running
+	// Drain stderr in the background so we don't block if grep writes errors.
 	go func() {
 		s := bufio.NewScanner(stderr)
 		for s.Scan() {
@@ -92,6 +94,8 @@ func streamGrep(conn net.Conn, query string, logFile string) {
 	}
 }
 
+// handleConnection decodes the client request and picks the right log file
+// (demo vs unit). Then it streams grep output back over the same socket.
 func handleConnection(conn net.Conn, machine string) {
 	defer conn.Close() // Ensure connection is closed
 
@@ -126,6 +130,8 @@ func handleConnection(conn net.Conn, machine string) {
 	streamGrep(conn, req.Input, log_file)
 }
 
+// getMachineNumber reads mapping.txt to figure out which machine index this
+// host corresponds to (based on hostname).
 func getMachineNumber() string {
 	file, err := os.Open("mapping.txt")
 	if err != nil {

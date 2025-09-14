@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Runs the local setup.sh on every host with nohup so it continues on the VM.
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"

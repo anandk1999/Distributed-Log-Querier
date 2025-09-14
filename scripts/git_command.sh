@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Runs a git (or any) command inside the mp1-g02 repo on each host.
+# Example: ./git_command.sh "git status -sb"
 # Load remote username
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"

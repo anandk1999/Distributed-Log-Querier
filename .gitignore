@@ -7,6 +7,9 @@
 # Scripts
 /scripts/.env
 
+# Unit-test
+/unit-test/.DS_Store
+
 # Root
 /.DS_Store
 /go.mod
