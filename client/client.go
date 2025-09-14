@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 type result struct {
@@ -157,6 +158,7 @@ func main() {
 	defer cancel()
 
 	var chans []<-chan result
+	start := time.Now()
 	for _, addr := range addresses {
 		chans = append(chans, connection(addr, string(jsonReq), ctx))
 	}
@@ -172,7 +174,8 @@ func main() {
 		fmt.Printf("[%s from %s] response:\n%s\n", r.addr, r.file_name, r.resp)
 
 		if !countFlag {
-			count, err := strconv.Atoi(strings.TrimSpace(r.resp))
+			// count, err := strconv.Atoi(strings.TrimSpace(r.resp))
+			count, err := strconv.Atoi(strings.Split(strings.TrimSpace(r.resp), ":")[1])
 			if err != nil {
 				fmt.Println("Cannot convert response to integer")
 			}
@@ -180,6 +183,7 @@ func main() {
 		}
 
 	}
+	end := time.Since(start)
 
 	if countFlag {
 		countMu.Lock()
@@ -192,6 +196,7 @@ func main() {
 	}
 
 	fmt.Println("Total count is: ", total_count)
+	fmt.Println("Total time taken for last byte in last vm: ", end)
 
 	os.Exit(0)
 }

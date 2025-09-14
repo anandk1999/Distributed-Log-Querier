@@ -109,7 +109,6 @@ func handleConnection(conn net.Conn, machine string) {
 		fmt.Println("Error unmarshaling request:", err)
 		return
 	}
-	fmt.Println("File type: %s", req.FileType)
 
 	fmt.Printf("Received from client: %s\n", req.Input)
 
